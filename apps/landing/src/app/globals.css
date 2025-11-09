@@ -1,0 +1,57 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Font variables */
+  --font-satoshi: 'Satoshi', 'Satoshi Fallback', system-ui, -apple-system, sans-serif;
+  --font-inter: var(--font-inter);
+
+  /* RGB Colors for transparency support */
+  --bg-default: 255 255 255;
+  --bg-muted: 250 250 250;
+  --bg-subtle: 245 245 245;
+  --bg-emphasis: 229 229 229;
+  --bg-inverted: 23 23 23;
+
+  --content-inverted: 255 255 255;
+  --content-muted: 163 163 163;
+  --content-subtle: 115 115 115;
+  --content-default: 64 64 64;
+  --content-emphasis: 23 23 23;
+
+  /* Shadows */
+  --shadow-default: 0 2px 6px -1px rgba(0, 0, 0, 0.16), 0 1px 4px -1px rgba(0, 0, 0, 0.04);
+  --shadow-active: 0 0 8px -2px rgba(0, 0, 0, 0.1), 0 6px 20px -3px rgba(0, 0, 0, 0.2);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    @apply scroll-smooth;
+  }
+
+  body {
+    @apply bg-white text-content-default;
+    @apply font-inter;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-satoshi;
+  }
+}
+
+@layer utilities {
+  .shadow-default {
+    box-shadow: var(--shadow-default);
+  }
+
+  .shadow-active {
+    box-shadow: var(--shadow-active);
+  }
+}

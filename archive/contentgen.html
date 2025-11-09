@@ -1,0 +1,978 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ContentGen - Generate SEO-Ready Articles, Blogs & Social Posts in Seconds</title>
+
+    <!-- Fonts: Satoshi (headings) + Inter (body) per Dub2 Design Guide -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://api.fontshare.com/v2/css?f[]=satoshi@700,500,400&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+        /*
+        ========================================
+        DUB2 DESIGN GUIDE TOKEN MAPPING
+        ========================================
+
+        COLORS (mapped to CSS vars + Tailwind utilities):
+        - --bg-default: rgb(255 255 255) → bg-white
+        - --bg-muted: rgb(250 250 250) → bg-gray-50/custom
+        - --bg-subtle: rgb(245 245 245) → bg-gray-100/custom
+        - --bg-inverted: rgb(23 23 23) → bg-[#171717]
+        - --content-emphasis: rgb(23 23 23) → text-[#171717]
+        - --content-default: rgb(64 64 64) → text-[#404040]
+        - --content-subtle: rgb(115 115 115) → text-[#737373]
+        - --content-muted: rgb(163 163 163) → text-[#a3a3a3]
+        - --border: hsl(0 0% 89.8%) → border-[#e5e5e5]
+        - Accent Orange: #ff6b35 (stats, CTAs)
+        - Accent Purple: #8b5cf6 (not used extensively)
+        - Success Green: #10b981 (status indicators)
+
+        TYPOGRAPHY:
+        - Satoshi 700: All headings (h1-h6)
+        - Inter 600: Card headings (h3)
+        - Inter 500: Buttons, nav, labels
+        - Inter 400: Body text
+
+        SPACING (4px base unit):
+        - Section padding: py-[100px] px-12 → py-[60px] px-6 on mobile
+        - Button padding: py-2 px-4 (8px 16px), py-3 px-6 (12px 24px large)
+        - Gaps: gap-3 (12px), gap-8 (32px), gap-12 (48px)
+
+        BORDER RADIUS:
+        - rounded-lg (8px): buttons, tabs
+        - rounded-xl (12px): cards, containers
+        - rounded-[20px] (20px): pills, badges
+
+        SHADOWS:
+        - --shadow-default: subtle elevation
+        - --shadow-active: hover elevation
+
+        BREAKPOINTS:
+        - md: 768px (mobile)
+        - lg: 1024px (tablet)
+
+        AMBIGUITIES & RESOLUTIONS:
+        - FAQ accordion: Used border-based design matching card style
+        - Pricing badges: Used pill-shaped badges per design guide (20px radius)
+        - Mobile menu toggle: Minimal JS implementation as specified
+        - Icons: Used inline SVG with matching weight/radius per guide
+        */
+
+        :root {
+            /* Fonts */
+            --font-satoshi: "Satoshi", "Satoshi Fallback", system-ui, -apple-system, sans-serif;
+            --font-inter: "Inter", "Inter Fallback", system-ui, -apple-system, sans-serif;
+
+            /* RGB Colors */
+            --bg-default: 255 255 255;
+            --bg-muted: 250 250 250;
+            --bg-subtle: 245 245 245;
+            --bg-emphasis: 229 229 229;
+            --bg-inverted: 23 23 23;
+
+            --content-inverted: 255 255 255;
+            --content-muted: 163 163 163;
+            --content-subtle: 115 115 115;
+            --content-default: 64 64 64;
+            --content-emphasis: 23 23 23;
+
+            /* Shadows */
+            --shadow-default: 0 2px 6px -1px rgba(0, 0, 0, 0.16), 0 1px 4px -1px rgba(0, 0, 0, 0.04);
+            --shadow-active: 0 0 8px -2px rgba(0, 0, 0, 0.1), 0 6px 20px -3px rgba(0, 0, 0, 0.2);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: var(--font-inter);
+            background: rgb(var(--bg-default));
+            color: rgb(var(--content-default));
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: var(--font-satoshi);
+        }
+
+        .shadow-default {
+            box-shadow: var(--shadow-default);
+        }
+
+        .shadow-active {
+            box-shadow: var(--shadow-active);
+        }
+
+        /* Mobile menu (hidden by default) */
+        #mobile-menu {
+            display: none;
+        }
+
+        #mobile-menu.active {
+            display: flex;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ========================================
+         STICKY HEADER / NAVBAR
+         ======================================== -->
+    <header class="sticky top-0 z-50 bg-white border-b border-[#e5e5e5]">
+        <div class="flex items-center justify-between px-6 md:px-12 py-4">
+            <!-- Logo -->
+            <a href="#" class="text-xl font-bold text-[#171717] no-underline" style="font-family: var(--font-satoshi);">
+                ContentGen
+            </a>
+
+            <!-- Desktop Navigation -->
+            <nav class="hidden md:flex items-center gap-8">
+                <a href="#features" class="text-sm font-medium text-[#404040] hover:text-[#171717] transition-colors duration-200 no-underline">Features</a>
+                <a href="#how-it-works" class="text-sm font-medium text-[#404040] hover:text-[#171717] transition-colors duration-200 no-underline">How it Works</a>
+                <a href="#pricing" class="text-sm font-medium text-[#404040] hover:text-[#171717] transition-colors duration-200 no-underline">Pricing</a>
+                <a href="#faq" class="text-sm font-medium text-[#404040] hover:text-[#171717] transition-colors duration-200 no-underline">FAQ</a>
+            </nav>
+
+            <!-- Header Buttons -->
+            <div class="flex items-center gap-3">
+                <a href="#pricing" class="hidden md:inline-block px-4 py-2 text-sm font-medium text-[#404040] bg-transparent hover:bg-[#f5f5f5] rounded-lg transition-all duration-200 no-underline">
+                    Log In
+                </a>
+                <a href="#pricing" class="px-4 py-2 text-sm font-medium text-white bg-[#171717] hover:opacity-90 rounded-lg transition-all duration-200 no-underline">
+                    Try for Free
+                </a>
+
+                <!-- Mobile Menu Toggle -->
+                <button id="mobile-menu-toggle" class="md:hidden text-[#171717]" aria-label="Toggle mobile menu" aria-expanded="false">
+                    <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="3" y1="12" x2="21" y2="12"></line>
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <line x1="3" y1="18" x2="21" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile Menu -->
+        <nav id="mobile-menu" class="flex-col gap-0 md:hidden border-t border-[#e5e5e5]" aria-label="Mobile navigation">
+            <a href="#features" class="px-6 py-3 text-sm font-medium text-[#404040] hover:bg-[#f5f5f5] transition-colors duration-200 no-underline block">Features</a>
+            <a href="#how-it-works" class="px-6 py-3 text-sm font-medium text-[#404040] hover:bg-[#f5f5f5] transition-colors duration-200 no-underline block">How it Works</a>
+            <a href="#pricing" class="px-6 py-3 text-sm font-medium text-[#404040] hover:bg-[#f5f5f5] transition-colors duration-200 no-underline block">Pricing</a>
+            <a href="#faq" class="px-6 py-3 text-sm font-medium text-[#404040] hover:bg-[#f5f5f5] transition-colors duration-200 no-underline block">FAQ</a>
+        </nav>
+    </header>
+
+    <main>
+
+        <!-- ========================================
+             HERO SECTION
+             ======================================== -->
+        <section class="px-6 md:px-12 pt-20 pb-16 md:pt-[80px] md:pb-[60px]">
+            <div class="max-w-[1200px] mx-auto text-center">
+                <!-- Announcement Badge -->
+                <div class="inline-flex items-center gap-2 px-[14px] py-[6px] mb-8 bg-[#fafafa] border border-[#e5e5e5] rounded-[20px]">
+                    <span class="text-[13px] font-medium text-[#404040]">
+                        🎉 New: AI-powered SEO optimizer
+                    </span>
+                    <a href="#features" class="text-[13px] font-medium text-[#171717] hover:underline">
+                        Learn more →
+                    </a>
+                </div>
+
+                <!-- Hero Headline -->
+                <h1 class="text-[40px] md:text-[64px] font-bold text-[#171717] leading-[1.1] tracking-[-0.02em] mb-6" style="font-family: var(--font-satoshi);">
+                    Generate SEO-Ready Articles, Blogs & Social Posts in Seconds
+                </h1>
+
+                <!-- Hero Subheadline -->
+                <p class="text-lg md:text-xl text-[#737373] leading-[1.6] mb-8 max-w-[700px] mx-auto">
+                    ContentGen uses advanced AI to create high-quality, engaging content that ranks. Save hours of writing time while maintaining your unique brand voice.
+                </p>
+
+                <!-- CTA Buttons -->
+                <div class="flex flex-col md:flex-row items-center justify-center gap-3 mb-12">
+                    <a href="#pricing" class="w-full md:w-auto px-6 py-3 text-[15px] font-medium text-white bg-[#171717] hover:opacity-90 rounded-lg transition-all duration-200 no-underline">
+                        Try for Free
+                    </a>
+                    <a href="#how-it-works" class="w-full md:w-auto px-6 py-3 text-[15px] font-medium text-[#171717] bg-[#fafafa] border border-[#e5e5e5] hover:bg-[#f5f5f5] rounded-lg transition-all duration-200 no-underline">
+                        Watch Demo
+                    </a>
+                </div>
+
+                <!-- Social Proof -->
+                <p class="text-sm text-[#a3a3a3]">
+                    Trusted by 10,000+ content creators and marketing teams
+                </p>
+            </div>
+        </section>
+
+        <!-- ========================================
+             FEATURES SECTION
+             ======================================== -->
+        <section id="features" class="px-6 md:px-12 py-[60px] md:py-[100px] bg-[#fafafa]">
+            <div class="max-w-[1200px] mx-auto">
+                <!-- Section Badge -->
+                <div class="inline-flex items-center gap-2 px-4 py-[6px] mb-6 bg-white border border-[#e5e5e5] rounded-[20px]">
+                    <span class="text-[13px] font-medium text-[#404040]">✨ Features</span>
+                </div>
+
+                <!-- Section Heading -->
+                <h2 class="text-[36px] md:text-[48px] font-bold text-[#171717] leading-[1.1] tracking-[-0.02em] mb-4" style="font-family: var(--font-satoshi);">
+                    Everything you need to create amazing content
+                </h2>
+
+                <!-- Section Description -->
+                <p class="text-lg text-[#737373] leading-[1.6] mb-12 md:mb-16 max-w-[700px]">
+                    Powerful AI-driven features designed to streamline your content creation workflow.
+                </p>
+
+                <!-- Feature Cards Grid -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+                    <!-- Feature Card 1 -->
+                    <div class="p-6 bg-white border border-[#e5e5e5] rounded-xl hover:shadow-active transition-all duration-200">
+                        <div class="text-2xl mb-4">🚀</div>
+                        <h3 class="text-base font-semibold text-[#171717] mb-2" style="font-family: var(--font-inter);">
+                            AI-Powered Writing
+                        </h3>
+                        <p class="text-sm text-[#737373] leading-[1.6] mb-3">
+                            Generate high-quality articles, blog posts, and social media content with advanced AI that understands context and tone.
+                        </p>
+                        <a href="#" class="text-sm font-medium text-[#171717] hover:underline no-underline">
+                            Learn more →
+                        </a>
+                    </div>
+
+                    <!-- Feature Card 2 -->
+                    <div class="p-6 bg-white border border-[#e5e5e5] rounded-xl hover:shadow-active transition-all duration-200">
+                        <div class="text-2xl mb-4">🎯</div>
+                        <h3 class="text-base font-semibold text-[#171717] mb-2" style="font-family: var(--font-inter);">
+                            SEO Optimization
+                        </h3>
+                        <p class="text-sm text-[#737373] leading-[1.6] mb-3">
+                            Built-in SEO tools analyze keywords, readability, and meta descriptions to ensure your content ranks higher.
+                        </p>
+                        <a href="#" class="text-sm font-medium text-[#171717] hover:underline no-underline">
+                            Learn more →
+                        </a>
+                    </div>
+
+                    <!-- Feature Card 3 -->
+                    <div class="p-6 bg-white border border-[#e5e5e5] rounded-xl hover:shadow-active transition-all duration-200">
+                        <div class="text-2xl mb-4">⚡</div>
+                        <h3 class="text-base font-semibold text-[#171717] mb-2" style="font-family: var(--font-inter);">
+                            Lightning Fast
+                        </h3>
+                        <p class="text-sm text-[#737373] leading-[1.6] mb-3">
+                            Generate 2,000-word articles in under 60 seconds. Save hours of writing time every week.
+                        </p>
+                        <a href="#" class="text-sm font-medium text-[#171717] hover:underline no-underline">
+                            Learn more →
+                        </a>
+                    </div>
+
+                    <!-- Feature Card 4 -->
+                    <div class="p-6 bg-white border border-[#e5e5e5] rounded-xl hover:shadow-active transition-all duration-200">
+                        <div class="text-2xl mb-4">🎨</div>
+                        <h3 class="text-base font-semibold text-[#171717] mb-2" style="font-family: var(--font-inter);">
+                            Brand Voice Control
+                        </h3>
+                        <p class="text-sm text-[#737373] leading-[1.6] mb-3">
+                            Maintain consistency across all content with customizable tone, style, and voice settings.
+                        </p>
+                        <a href="#" class="text-sm font-medium text-[#171717] hover:underline no-underline">
+                            Learn more →
+                        </a>
+                    </div>
+
+                    <!-- Feature Card 5 -->
+                    <div class="p-6 bg-white border border-[#e5e5e5] rounded-xl hover:shadow-active transition-all duration-200">
+                        <div class="text-2xl mb-4">🌐</div>
+                        <h3 class="text-base font-semibold text-[#171717] mb-2" style="font-family: var(--font-inter);">
+                            Multi-Language Support
+                        </h3>
+                        <p class="text-sm text-[#737373] leading-[1.6] mb-3">
+                            Create content in 25+ languages with native-level fluency and cultural understanding.
+                        </p>
+                        <a href="#" class="text-sm font-medium text-[#171717] hover:underline no-underline">
+                            Learn more →
+                        </a>
+                    </div>
+
+                    <!-- Feature Card 6 -->
+                    <div class="p-6 bg-white border border-[#e5e5e5] rounded-xl hover:shadow-active transition-all duration-200">
+                        <div class="text-2xl mb-4">📊</div>
+                        <h3 class="text-base font-semibold text-[#171717] mb-2" style="font-family: var(--font-inter);">
+                            Analytics Dashboard
+                        </h3>
+                        <p class="text-sm text-[#737373] leading-[1.6] mb-3">
+                            Track performance metrics, engagement rates, and ROI for every piece of content you create.
+                        </p>
+                        <a href="#" class="text-sm font-medium text-[#171717] hover:underline no-underline">
+                            Learn more →
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================
+             HOW IT WORKS SECTION
+             ======================================== -->
+        <section id="how-it-works" class="px-6 md:px-12 py-[60px] md:py-[100px]">
+            <div class="max-w-[1200px] mx-auto">
+                <!-- Section Badge -->
+                <div class="inline-flex items-center gap-2 px-4 py-[6px] mb-6 bg-[#fafafa] border border-[#e5e5e5] rounded-[20px]">
+                    <span class="text-[13px] font-medium text-[#404040]">🔧 How it Works</span>
+                </div>
+
+                <!-- Section Heading -->
+                <h2 class="text-[36px] md:text-[48px] font-bold text-[#171717] leading-[1.2] tracking-[-0.02em] mb-4" style="font-family: var(--font-satoshi);">
+                    Create amazing content in 3 simple steps
+                </h2>
+
+                <!-- Section Description -->
+                <p class="text-lg text-[#737373] leading-[1.6] mb-12 md:mb-16 max-w-[700px]">
+                    From idea to published content in minutes—no writing experience required.
+                </p>
+
+                <!-- Steps Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-12 md:gap-8">
+                    <!-- Step 1 -->
+                    <div class="text-center md:text-left">
+                        <div class="inline-flex items-center justify-center w-12 h-12 mb-6 text-xl font-bold text-white bg-[#171717] rounded-lg" style="font-family: var(--font-satoshi);">
+                            1
+                        </div>
+                        <h3 class="text-xl font-bold text-[#171717] mb-3" style="font-family: var(--font-satoshi);">
+                            Choose Your Topic
+                        </h3>
+                        <p class="text-base text-[#737373] leading-[1.6]">
+                            Enter your topic, keywords, or upload a brief. Our AI analyzes your input to understand exactly what you need.
+                        </p>
+                    </div>
+
+                    <!-- Step 2 -->
+                    <div class="text-center md:text-left">
+                        <div class="inline-flex items-center justify-center w-12 h-12 mb-6 text-xl font-bold text-white bg-[#171717] rounded-lg" style="font-family: var(--font-satoshi);">
+                            2
+                        </div>
+                        <h3 class="text-xl font-bold text-[#171717] mb-3" style="font-family: var(--font-satoshi);">
+                            Customize Settings
+                        </h3>
+                        <p class="text-base text-[#737373] leading-[1.6]">
+                            Select tone, style, length, and target audience. Set SEO parameters and brand voice preferences.
+                        </p>
+                    </div>
+
+                    <!-- Step 3 -->
+                    <div class="text-center md:text-left">
+                        <div class="inline-flex items-center justify-center w-12 h-12 mb-6 text-xl font-bold text-white bg-[#171717] rounded-lg" style="font-family: var(--font-satoshi);">
+                            3
+                        </div>
+                        <h3 class="text-xl font-bold text-[#171717] mb-3" style="font-family: var(--font-satoshi);">
+                            Generate & Publish
+                        </h3>
+                        <p class="text-base text-[#737373] leading-[1.6]">
+                            Click generate and watch as high-quality content appears in seconds. Edit, refine, and publish directly to your platform.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================
+             PRICING SECTION
+             ======================================== -->
+        <section id="pricing" class="px-6 md:px-12 py-[60px] md:py-[100px] bg-[#fafafa]">
+            <div class="max-w-[1200px] mx-auto">
+                <!-- Section Badge -->
+                <div class="inline-flex items-center gap-2 px-4 py-[6px] mb-6 bg-white border border-[#e5e5e5] rounded-[20px]">
+                    <span class="text-[13px] font-medium text-[#404040]">💰 Pricing</span>
+                </div>
+
+                <!-- Section Heading -->
+                <h2 class="text-[36px] md:text-[48px] font-bold text-[#171717] leading-[1.2] tracking-[-0.02em] mb-4" style="font-family: var(--font-satoshi);">
+                    Simple, transparent pricing
+                </h2>
+
+                <!-- Section Description -->
+                <p class="text-lg text-[#737373] leading-[1.6] mb-12 md:mb-16 max-w-[700px]">
+                    Choose the perfect plan for your content creation needs. All plans include a 14-day free trial.
+                </p>
+
+                <!-- Pricing Cards Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                    <!-- Starter Plan -->
+                    <div class="p-8 bg-white border border-[#e5e5e5] rounded-xl">
+                        <div class="mb-6">
+                            <h3 class="text-xl font-bold text-[#171717] mb-2" style="font-family: var(--font-satoshi);">
+                                Starter
+                            </h3>
+                            <p class="text-sm text-[#737373]">Perfect for individuals</p>
+                        </div>
+
+                        <div class="mb-6">
+                            <span class="text-[48px] font-bold text-[#171717] leading-[1]" style="font-family: var(--font-satoshi);">$29</span>
+                            <span class="text-base text-[#737373]">/month</span>
+                        </div>
+
+                        <a href="#" class="block w-full px-6 py-3 mb-8 text-center text-[15px] font-medium text-[#171717] bg-[#fafafa] border border-[#e5e5e5] hover:bg-[#f5f5f5] rounded-lg transition-all duration-200 no-underline">
+                            Start Free Trial
+                        </a>
+
+                        <ul class="space-y-3">
+                            <li class="flex items-start gap-3 text-sm text-[#404040]">
+                                <svg class="w-5 h-5 mt-0.5 flex-shrink-0 text-[#10b981]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
+                                <span>50 articles per month</span>
+                            </li>
+                            <li class="flex items-start gap-3 text-sm text-[#404040]">
+                                <svg class="w-5 h-5 mt-0.5 flex-shrink-0 text-[#10b981]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
+                                <span>SEO optimization</span>
+                            </li>
+                            <li class="flex items-start gap-3 text-sm text-[#404040]">
+                                <svg class="w-5 h-5 mt-0.5 flex-shrink-0 text-[#10b981]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
+                                <span>5 brand voices</span>
+                            </li>
+                            <li class="flex items-start gap-3 text-sm text-[#404040]">
+                                <svg class="w-5 h-5 mt-0.5 flex-shrink-0 text-[#10b981]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
+                                <span>Email support</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Professional Plan (Popular) -->
+                    <div class="p-8 bg-white border-2 border-[#171717] rounded-xl relative">
+                        <!-- Popular Badge -->
+                        <div class="absolute -top-3 left-1/2 -translate-x-1/2">
+                            <span class="inline-block px-4 py-1 text-xs font-semibold text-white bg-[#171717] rounded-full" style="font-family: var(--font-inter);">
+                                MOST POPULAR
+                            </span>
+                        </div>
+
+                        <div class="mb-6">
+                            <h3 class="text-xl font-bold text-[#171717] mb-2" style="font-family: var(--font-satoshi);">
+                                Professional
+                            </h3>
+                            <p class="text-sm text-[#737373]">For content creators</p>
+                        </div>
+
+                        <div class="mb-6">
+                            <span class="text-[48px] font-bold text-[#171717] leading-[1]" style="font-family: var(--font-satoshi);">$79</span>
+                            <span class="text-base text-[#737373]">/month</span>
+                        </div>
+
+                        <a href="#" class="block w-full px-6 py-3 mb-8 text-center text-[15px] font-medium text-white bg-[#171717] hover:opacity-90 rounded-lg transition-all duration-200 no-underline">
+                            Start Free Trial
+                        </a>
+
+                        <ul class="space-y-3">
+                            <li class="flex items-start gap-3 text-sm text-[#404040]">
+                                <svg class="w-5 h-5 mt-0.5 flex-shrink-0 text-[#10b981]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
+                                <span><strong>200 articles</strong> per month</span>
+                            </li>
+                            <li class="flex items-start gap-3 text-sm text-[#404040]">
+                                <svg class="w-5 h-5 mt-0.5 flex-shrink-0 text-[#10b981]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
+                                <span>Advanced SEO tools</span>
+                            </li>
+                            <li class="flex items-start gap-3 text-sm text-[#404040]">
+                                <svg class="w-5 h-5 mt-0.5 flex-shrink-0 text-[#10b981]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
+                                <span><strong>Unlimited</strong> brand voices</span>
+                            </li>
+                            <li class="flex items-start gap-3 text-sm text-[#404040]">
+                                <svg class="w-5 h-5 mt-0.5 flex-shrink-0 text-[#10b981]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
+                                <span>Analytics dashboard</span>
+                            </li>
+                            <li class="flex items-start gap-3 text-sm text-[#404040]">
+                                <svg class="w-5 h-5 mt-0.5 flex-shrink-0 text-[#10b981]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
+                                <span>Priority support</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Enterprise Plan -->
+                    <div class="p-8 bg-white border border-[#e5e5e5] rounded-xl">
+                        <div class="mb-6">
+                            <h3 class="text-xl font-bold text-[#171717] mb-2" style="font-family: var(--font-satoshi);">
+                                Enterprise
+                            </h3>
+                            <p class="text-sm text-[#737373]">For large teams</p>
+                        </div>
+
+                        <div class="mb-6">
+                            <span class="text-[48px] font-bold text-[#171717] leading-[1]" style="font-family: var(--font-satoshi);">$299</span>
+                            <span class="text-base text-[#737373]">/month</span>
+                        </div>
+
+                        <a href="#" class="block w-full px-6 py-3 mb-8 text-center text-[15px] font-medium text-[#171717] bg-[#fafafa] border border-[#e5e5e5] hover:bg-[#f5f5f5] rounded-lg transition-all duration-200 no-underline">
+                            Contact Sales
+                        </a>
+
+                        <ul class="space-y-3">
+                            <li class="flex items-start gap-3 text-sm text-[#404040]">
+                                <svg class="w-5 h-5 mt-0.5 flex-shrink-0 text-[#10b981]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
+                                <span><strong>Unlimited</strong> articles</span>
+                            </li>
+                            <li class="flex items-start gap-3 text-sm text-[#404040]">
+                                <svg class="w-5 h-5 mt-0.5 flex-shrink-0 text-[#10b981]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
+                                <span>Custom AI training</span>
+                            </li>
+                            <li class="flex items-start gap-3 text-sm text-[#404040]">
+                                <svg class="w-5 h-5 mt-0.5 flex-shrink-0 text-[#10b981]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
+                                <span>Team collaboration</span>
+                            </li>
+                            <li class="flex items-start gap-3 text-sm text-[#404040]">
+                                <svg class="w-5 h-5 mt-0.5 flex-shrink-0 text-[#10b981]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
+                                <span>API access</span>
+                            </li>
+                            <li class="flex items-start gap-3 text-sm text-[#404040]">
+                                <svg class="w-5 h-5 mt-0.5 flex-shrink-0 text-[#10b981]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
+                                <span>Dedicated account manager</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================
+             TESTIMONIALS SECTION
+             ======================================== -->
+        <section class="px-6 md:px-12 py-[60px] md:py-[100px]">
+            <div class="max-w-[1200px] mx-auto">
+                <!-- Section Badge -->
+                <div class="inline-flex items-center gap-2 px-4 py-[6px] mb-6 bg-[#fafafa] border border-[#e5e5e5] rounded-[20px]">
+                    <span class="text-[13px] font-medium text-[#404040]">💬 Testimonials</span>
+                </div>
+
+                <!-- Section Heading -->
+                <h2 class="text-[36px] md:text-[48px] font-bold text-[#171717] leading-[1.2] tracking-[-0.02em] mb-12 md:mb-16" style="font-family: var(--font-satoshi);">
+                    Loved by content creators worldwide
+                </h2>
+
+                <!-- Testimonials Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Testimonial 1 -->
+                    <div class="p-8 md:p-12 bg-white border border-[#e5e5e5] rounded-xl">
+                        <p class="text-lg md:text-xl text-[#171717] leading-[1.6] mb-6">
+                            "ContentGen has completely transformed our content workflow. What used to take our team 5 hours now takes 30 minutes. The quality is incredible and our SEO rankings have improved significantly."
+                        </p>
+                        <div class="flex items-center gap-3">
+                            <div class="w-12 h-12 bg-[#f5f5f5] rounded-full flex items-center justify-center text-lg font-bold text-[#404040]" style="font-family: var(--font-satoshi);">
+                                SM
+                            </div>
+                            <div>
+                                <div class="font-semibold text-[#171717]" style="font-family: var(--font-satoshi);">
+                                    Sarah Martinez
+                                </div>
+                                <div class="text-sm text-[#a3a3a3]">
+                                    Head of Marketing, TechCorp
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Testimonial 2 -->
+                    <div class="p-8 md:p-12 bg-white border border-[#e5e5e5] rounded-xl">
+                        <p class="text-lg md:text-xl text-[#171717] leading-[1.6] mb-6">
+                            "As a solo content creator, ContentGen is a game-changer. I've 10xed my output without sacrificing quality. The brand voice feature keeps everything consistent with my personal style."
+                        </p>
+                        <div class="flex items-center gap-3">
+                            <div class="w-12 h-12 bg-[#f5f5f5] rounded-full flex items-center justify-center text-lg font-bold text-[#404040]" style="font-family: var(--font-satoshi);">
+                                JC
+                            </div>
+                            <div>
+                                <div class="font-semibold text-[#171717]" style="font-family: var(--font-satoshi);">
+                                    James Chen
+                                </div>
+                                <div class="text-sm text-[#a3a3a3]">
+                                    Freelance Writer & Blogger
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Testimonial 3 -->
+                    <div class="p-8 md:p-12 bg-white border border-[#e5e5e5] rounded-xl">
+                        <p class="text-lg md:text-xl text-[#171717] leading-[1.6] mb-6">
+                            "The multi-language support is phenomenal. We're now creating content in 12 different markets with the same ease as English. Our global reach has expanded dramatically."
+                        </p>
+                        <div class="flex items-center gap-3">
+                            <div class="w-12 h-12 bg-[#f5f5f5] rounded-full flex items-center justify-center text-lg font-bold text-[#404040]" style="font-family: var(--font-satoshi);">
+                                EP
+                            </div>
+                            <div>
+                                <div class="font-semibold text-[#171717]" style="font-family: var(--font-satoshi);">
+                                    Emma Patel
+                                </div>
+                                <div class="text-sm text-[#a3a3a3]">
+                                    Content Director, GlobalBrand
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Testimonial 4 -->
+                    <div class="p-8 md:p-12 bg-white border border-[#e5e5e5] rounded-xl">
+                        <p class="text-lg md:text-xl text-[#171717] leading-[1.6] mb-6">
+                            "The ROI on ContentGen is insane. We've cut content production costs by 70% while doubling our output. The analytics show our engagement rates are at an all-time high."
+                        </p>
+                        <div class="flex items-center gap-3">
+                            <div class="w-12 h-12 bg-[#f5f5f5] rounded-full flex items-center justify-center text-lg font-bold text-[#404040]" style="font-family: var(--font-satoshi);">
+                                MJ
+                            </div>
+                            <div>
+                                <div class="font-semibold text-[#171717]" style="font-family: var(--font-satoshi);">
+                                    Michael Johnson
+                                </div>
+                                <div class="text-sm text-[#a3a3a3]">
+                                    CEO, StartupHub
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================
+             FAQ SECTION (Accordion)
+             ======================================== -->
+        <section id="faq" class="px-6 md:px-12 py-[60px] md:py-[100px] bg-[#fafafa]">
+            <div class="max-w-[900px] mx-auto">
+                <!-- Section Badge -->
+                <div class="inline-flex items-center gap-2 px-4 py-[6px] mb-6 bg-white border border-[#e5e5e5] rounded-[20px]">
+                    <span class="text-[13px] font-medium text-[#404040]">❓ FAQ</span>
+                </div>
+
+                <!-- Section Heading -->
+                <h2 class="text-[36px] md:text-[48px] font-bold text-[#171717] leading-[1.2] tracking-[-0.02em] mb-12" style="font-family: var(--font-satoshi);">
+                    Frequently asked questions
+                </h2>
+
+                <!-- FAQ Accordion -->
+                <div class="space-y-4">
+                    <!-- FAQ Item 1 -->
+                    <div class="bg-white border border-[#e5e5e5] rounded-xl overflow-hidden">
+                        <button class="faq-question w-full px-6 py-5 flex items-center justify-between text-left hover:bg-[#fafafa] transition-colors duration-200" aria-expanded="false">
+                            <span class="text-base font-semibold text-[#171717]" style="font-family: var(--font-inter);">
+                                How does the AI generate content?
+                            </span>
+                            <svg class="faq-icon w-5 h-5 text-[#404040] transition-transform duration-200" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </button>
+                        <div class="faq-answer hidden px-6 pb-5">
+                            <p class="text-sm text-[#737373] leading-[1.6]">
+                                ContentGen uses advanced large language models trained on millions of high-quality articles. Our AI analyzes your input, understands context and intent, then generates original content that matches your specifications. The system is continuously learning and improving to deliver better results.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- FAQ Item 2 -->
+                    <div class="bg-white border border-[#e5e5e5] rounded-xl overflow-hidden">
+                        <button class="faq-question w-full px-6 py-5 flex items-center justify-between text-left hover:bg-[#fafafa] transition-colors duration-200" aria-expanded="false">
+                            <span class="text-base font-semibold text-[#171717]" style="font-family: var(--font-inter);">
+                                Is the content plagiarism-free?
+                            </span>
+                            <svg class="faq-icon w-5 h-5 text-[#404040] transition-transform duration-200" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </button>
+                        <div class="faq-answer hidden px-6 pb-5">
+                            <p class="text-sm text-[#737373] leading-[1.6]">
+                                Yes, absolutely. All content generated by ContentGen is 100% original. Our AI creates new content from scratch based on patterns learned from training data—it doesn't copy or paraphrase existing articles. Every piece passes plagiarism detection tools with flying colors.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- FAQ Item 3 -->
+                    <div class="bg-white border border-[#e5e5e5] rounded-xl overflow-hidden">
+                        <button class="faq-question w-full px-6 py-5 flex items-center justify-between text-left hover:bg-[#fafafa] transition-colors duration-200" aria-expanded="false">
+                            <span class="text-base font-semibold text-[#171717]" style="font-family: var(--font-inter);">
+                                Can I edit the generated content?
+                            </span>
+                            <svg class="faq-icon w-5 h-5 text-[#404040] transition-transform duration-200" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </button>
+                        <div class="faq-answer hidden px-6 pb-5">
+                            <p class="text-sm text-[#737373] leading-[1.6]">
+                                Of course! ContentGen includes a full-featured editor where you can refine, rewrite, or expand any part of the generated content. You can also regenerate specific sections, adjust tone, or add your own insights. Think of it as a collaborative writing partner.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- FAQ Item 4 -->
+                    <div class="bg-white border border-[#e5e5e5] rounded-xl overflow-hidden">
+                        <button class="faq-question w-full px-6 py-5 flex items-center justify-between text-left hover:bg-[#fafafa] transition-colors duration-200" aria-expanded="false">
+                            <span class="text-base font-semibold text-[#171717]" style="font-family: var(--font-inter);">
+                                What languages are supported?
+                            </span>
+                            <svg class="faq-icon w-5 h-5 text-[#404040] transition-transform duration-200" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </button>
+                        <div class="faq-answer hidden px-6 pb-5">
+                            <p class="text-sm text-[#737373] leading-[1.6]">
+                                ContentGen supports 25+ languages including English, Spanish, French, German, Italian, Portuguese, Dutch, Russian, Chinese (Simplified & Traditional), Japanese, Korean, Arabic, Hindi, and many more. Content quality is consistently high across all supported languages.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- FAQ Item 5 -->
+                    <div class="bg-white border border-[#e5e5e5] rounded-xl overflow-hidden">
+                        <button class="faq-question w-full px-6 py-5 flex items-center justify-between text-left hover:bg-[#fafafa] transition-colors duration-200" aria-expanded="false">
+                            <span class="text-base font-semibold text-[#171717]" style="font-family: var(--font-inter);">
+                                Do you offer refunds?
+                            </span>
+                            <svg class="faq-icon w-5 h-5 text-[#404040] transition-transform duration-200" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </button>
+                        <div class="faq-answer hidden px-6 pb-5">
+                            <p class="text-sm text-[#737373] leading-[1.6]">
+                                Yes, we offer a 30-day money-back guarantee. If you're not satisfied with ContentGen for any reason within the first 30 days, simply contact our support team and we'll issue a full refund—no questions asked. We also offer a 14-day free trial so you can try before you buy.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- FAQ Item 6 -->
+                    <div class="bg-white border border-[#e5e5e5] rounded-xl overflow-hidden">
+                        <button class="faq-question w-full px-6 py-5 flex items-center justify-between text-left hover:bg-[#fafafa] transition-colors duration-200" aria-expanded="false">
+                            <span class="text-base font-semibold text-[#171717]" style="font-family: var(--font-inter);">
+                                Can I cancel my subscription anytime?
+                            </span>
+                            <svg class="faq-icon w-5 h-5 text-[#404040] transition-transform duration-200" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </button>
+                        <div class="faq-answer hidden px-6 pb-5">
+                            <p class="text-sm text-[#737373] leading-[1.6]">
+                                Absolutely. There are no long-term contracts or commitments. You can cancel your subscription at any time from your account settings. If you cancel, you'll retain access until the end of your current billing period.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================
+             FINAL CTA SECTION
+             ======================================== -->
+        <section class="px-6 md:px-12 py-[60px] md:py-[100px]">
+            <div class="max-w-[900px] mx-auto text-center">
+                <h2 class="text-[36px] md:text-[56px] font-bold text-[#171717] leading-[1.1] tracking-[-0.02em] mb-6" style="font-family: var(--font-satoshi);">
+                    Ready to transform your content creation?
+                </h2>
+
+                <p class="text-lg md:text-xl text-[#737373] leading-[1.6] mb-8 max-w-[700px] mx-auto">
+                    Join thousands of content creators who are saving time and creating better content with ContentGen.
+                </p>
+
+                <div class="flex flex-col md:flex-row items-center justify-center gap-3">
+                    <a href="#pricing" class="w-full md:w-auto px-6 py-3 text-[15px] font-medium text-white bg-[#171717] hover:opacity-90 rounded-lg transition-all duration-200 no-underline">
+                        Start Free Trial
+                    </a>
+                    <a href="#pricing" class="w-full md:w-auto px-6 py-3 text-[15px] font-medium text-[#171717] bg-[#fafafa] border border-[#e5e5e5] hover:bg-[#f5f5f5] rounded-lg transition-all duration-200 no-underline">
+                        View Pricing
+                    </a>
+                </div>
+
+                <p class="mt-6 text-sm text-[#a3a3a3]">
+                    No credit card required • 14-day free trial • Cancel anytime
+                </p>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ========================================
+         FOOTER
+         ======================================== -->
+    <footer class="px-6 md:px-12 pt-20 pb-10 bg-[#fafafa] border-t border-[#e5e5e5]">
+        <div class="max-w-[1200px] mx-auto">
+            <!-- Footer Content Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12 md:gap-12 mb-12">
+                <!-- Brand Column (wider) -->
+                <div class="lg:col-span-2">
+                    <div class="mb-6">
+                        <a href="#" class="text-2xl font-bold text-[#171717] no-underline" style="font-family: var(--font-satoshi);">
+                            ContentGen
+                        </a>
+                    </div>
+                    <p class="text-sm text-[#737373] leading-[1.6] mb-6 max-w-[300px]">
+                        Generate SEO-ready articles, blogs & social posts in seconds with advanced AI technology.
+                    </p>
+
+                    <!-- Social Links -->
+                    <div class="flex gap-4">
+                        <a href="#" class="text-[#a3a3a3] hover:text-[#171717] transition-colors duration-200" aria-label="Twitter">
+                            <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z"></path>
+                            </svg>
+                        </a>
+                        <a href="#" class="text-[#a3a3a3] hover:text-[#171717] transition-colors duration-200" aria-label="LinkedIn">
+                            <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z"></path>
+                                <circle cx="4" cy="4" r="2"></circle>
+                            </svg>
+                        </a>
+                        <a href="#" class="text-[#a3a3a3] hover:text-[#171717] transition-colors duration-200" aria-label="GitHub">
+                            <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 00-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0020 4.77 5.07 5.07 0 0019.91 1S18.73.65 16 2.48a13.38 13.38 0 00-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 005 4.77a5.44 5.44 0 00-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 009 18.13V22"></path>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Product Column -->
+                <div>
+                    <h4 class="text-sm font-semibold text-[#171717] mb-5" style="font-family: var(--font-inter);">Product</h4>
+                    <ul class="space-y-4">
+                        <li><a href="#features" class="text-sm text-[#a3a3a3] hover:text-[#171717] transition-colors duration-200 no-underline">Features</a></li>
+                        <li><a href="#pricing" class="text-sm text-[#a3a3a3] hover:text-[#171717] transition-colors duration-200 no-underline">Pricing</a></li>
+                        <li><a href="#" class="text-sm text-[#a3a3a3] hover:text-[#171717] transition-colors duration-200 no-underline">Integrations</a></li>
+                        <li><a href="#" class="text-sm text-[#a3a3a3] hover:text-[#171717] transition-colors duration-200 no-underline">API</a></li>
+                    </ul>
+                </div>
+
+                <!-- Company Column -->
+                <div>
+                    <h4 class="text-sm font-semibold text-[#171717] mb-5" style="font-family: var(--font-inter);">Company</h4>
+                    <ul class="space-y-4">
+                        <li><a href="#" class="text-sm text-[#a3a3a3] hover:text-[#171717] transition-colors duration-200 no-underline">About</a></li>
+                        <li><a href="#" class="text-sm text-[#a3a3a3] hover:text-[#171717] transition-colors duration-200 no-underline">Blog</a></li>
+                        <li><a href="#" class="text-sm text-[#a3a3a3] hover:text-[#171717] transition-colors duration-200 no-underline">Careers</a></li>
+                        <li><a href="#" class="text-sm text-[#a3a3a3] hover:text-[#171717] transition-colors duration-200 no-underline">Press</a></li>
+                    </ul>
+                </div>
+
+                <!-- Resources Column -->
+                <div>
+                    <h4 class="text-sm font-semibold text-[#171717] mb-5" style="font-family: var(--font-inter);">Resources</h4>
+                    <ul class="space-y-4">
+                        <li><a href="#" class="text-sm text-[#a3a3a3] hover:text-[#171717] transition-colors duration-200 no-underline">Documentation</a></li>
+                        <li><a href="#" class="text-sm text-[#a3a3a3] hover:text-[#171717] transition-colors duration-200 no-underline">Help Center</a></li>
+                        <li><a href="#" class="text-sm text-[#a3a3a3] hover:text-[#171717] transition-colors duration-200 no-underline">Community</a></li>
+                        <li><a href="#" class="text-sm text-[#a3a3a3] hover:text-[#171717] transition-colors duration-200 no-underline">Contact</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Footer Bottom -->
+            <div class="pt-8 border-t border-[#e5e5e5] flex flex-col md:flex-row items-center justify-between gap-4">
+                <div class="flex flex-wrap items-center justify-center md:justify-start gap-4 text-sm text-[#a3a3a3]">
+                    <span>© 2025 ContentGen. All rights reserved.</span>
+                    <a href="#" class="hover:text-[#171717] transition-colors duration-200 no-underline">Privacy</a>
+                    <a href="#" class="hover:text-[#171717] transition-colors duration-200 no-underline">Terms</a>
+                    <a href="#" class="hover:text-[#171717] transition-colors duration-200 no-underline">Cookies</a>
+                </div>
+
+                <!-- Status Indicator -->
+                <div class="flex items-center gap-2 text-sm text-[#a3a3a3]">
+                    <div class="w-2 h-2 bg-[#10b981] rounded-full"></div>
+                    <span>All systems operational</span>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ========================================
+         MINIMAL INLINE JAVASCRIPT
+         ======================================== -->
+    <script>
+        // Mobile Menu Toggle
+        const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+        const mobileMenu = document.getElementById('mobile-menu');
+
+        mobileMenuToggle.addEventListener('click', () => {
+            const isActive = mobileMenu.classList.contains('active');
+            mobileMenu.classList.toggle('active');
+            mobileMenuToggle.setAttribute('aria-expanded', !isActive);
+        });
+
+        // Close mobile menu when link is clicked
+        const mobileLinks = mobileMenu.querySelectorAll('a');
+        mobileLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                mobileMenu.classList.remove('active');
+                mobileMenuToggle.setAttribute('aria-expanded', 'false');
+            });
+        });
+
+        // FAQ Accordion
+        const faqQuestions = document.querySelectorAll('.faq-question');
+
+        faqQuestions.forEach(question => {
+            question.addEventListener('click', () => {
+                const answer = question.nextElementSibling;
+                const icon = question.querySelector('.faq-icon');
+                const isOpen = answer.classList.contains('hidden');
+
+                // Close all other FAQs
+                faqQuestions.forEach(q => {
+                    if (q !== question) {
+                        q.nextElementSibling.classList.add('hidden');
+                        q.querySelector('.faq-icon').style.transform = 'rotate(0deg)';
+                        q.setAttribute('aria-expanded', 'false');
+                    }
+                });
+
+                // Toggle current FAQ
+                if (isOpen) {
+                    answer.classList.remove('hidden');
+                    icon.style.transform = 'rotate(180deg)';
+                    question.setAttribute('aria-expanded', 'true');
+                } else {
+                    answer.classList.add('hidden');
+                    icon.style.transform = 'rotate(0deg)';
+                    question.setAttribute('aria-expanded', 'false');
+                }
+            });
+        });
+    </script>
+
+</body>
+</html>
