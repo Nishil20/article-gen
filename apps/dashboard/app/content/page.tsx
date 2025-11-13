@@ -162,7 +162,7 @@ export default function ContentPage() {
                 Manage and organize your generated articles
               </p>
             </div>
-            <Link href="/article-writer">
+            <Link href="/old-article-writer">
               <Button>
                 <svg
                   className="w-4 h-4 mr-2"

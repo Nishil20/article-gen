@@ -37,8 +37,8 @@ export const mockMetrics = [
 
 export const mockTools = [
   {
-    id: "article-generator",
-    title: "Article Generator",
+    id: "old-article-generator",
+    title: "Old Article Generator",
     description: "Generate full-length SEO-optimized articles in seconds",
     icon: "📄",
     category: "Content Creation",
@@ -48,6 +48,13 @@ export const mockTools = [
     title: "Blog Post Writer",
     description: "Create engaging blog posts with AI assistance",
     icon: "✨",
+    category: "Content Creation",
+  },
+  {
+    id: "article-generator",
+    title: "Article Generator",
+    description: "Complete end-to-end article creation with outline, sections, editing, and SEO",
+    icon: "🚀",
     category: "Content Creation",
   },
   {
@@ -113,31 +120,55 @@ export const mockNavigation = [
   {
     name: "Dashboard",
     href: "/",
-    icon: "📊",
+    icon: "LayoutDashboard",
     active: true,
   },
   {
-    name: "AI Article Writer",
-    href: "/article-writer",
-    icon: "✍️",
+    name: "Blog Post Writer",
+    href: "/blog-post-writer",
+    icon: "Sparkles",
+    active: false,
+  },
+  {
+    name: "Article Generator",
+    href: "/article-generator",
+    icon: "Rocket",
+    active: false,
+  },
+  {
+    name: "Old Article Writer",
+    href: "/old-article-writer",
+    icon: "PenTool",
+    active: false,
+  },
+  {
+    name: "Content Rewriter",
+    href: "/content-rewriter",
+    icon: "RefreshCw",
+    active: false,
+  },
+  {
+    name: "Paragraph Generator",
+    href: "/paragraph-generator",
+    icon: "AlignLeft",
     active: false,
   },
   {
     name: "All Tools",
     href: "/tools",
-    icon: "🛠️",
+    icon: "Wrench",
     active: false,
   },
   {
     name: "My Content",
     href: "/content",
-    icon: "📁",
+    icon: "Folder",
     active: false,
   },
   {
     name: "Upgrade",
     href: "/upgrade",
-    icon: "⬆️",
+    icon: "ArrowUpCircle",
     active: false,
   },
 ];

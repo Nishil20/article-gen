@@ -63,7 +63,7 @@ export function EmptyState() {
 
       {/* CTAs */}
       <div className="flex gap-3 justify-center">
-        <Link href="/article-writer">
+        <Link href="/old-article-writer">
           <Button size="lg">
             <svg
               className="w-4 h-4 mr-2"

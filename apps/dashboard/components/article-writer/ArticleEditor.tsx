@@ -9,6 +9,7 @@ interface ArticleEditorProps {
   content: string;
   title?: string;
   onSave?: () => void;
+  onBack?: () => void;
   className?: string;
   readOnly?: boolean;
 }
@@ -17,6 +18,7 @@ export function ArticleEditor({
   content,
   title = "Generated Article",
   onSave,
+  onBack,
   className,
   readOnly = true,
 }: ArticleEditorProps) {
@@ -179,6 +181,26 @@ export function ArticleEditor({
           </div>
 
           <div className="flex items-center gap-2">
+            {/* Back Button */}
+            {onBack && (
+              <Button variant="ghost" size="sm" onClick={onBack}>
+                <svg
+                  className="w-4 h-4 mr-2"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M15 19l-7-7 7-7"
+                  />
+                </svg>
+                Back
+              </Button>
+            )}
+
             {/* Export Button */}
             <div className="relative">
               <Button

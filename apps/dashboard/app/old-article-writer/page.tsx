@@ -99,7 +99,7 @@ export default function ArticleWriterHub() {
                 </div>
               </div>
 
-              <Link href="/article-writer/quick" className="mt-6">
+              <Link href="/old-article-writer/quick" className="mt-6">
                 <Button className="w-full">Start Quick Workflow</Button>
               </Link>
             </CardContent>
@@ -169,7 +169,7 @@ export default function ArticleWriterHub() {
                 </div>
               </div>
 
-              <Link href="/article-writer/standard" className="mt-6">
+              <Link href="/old-article-writer/standard" className="mt-6">
                 <Button variant="outline" className="w-full">
                   Start Standard Workflow
                 </Button>
@@ -224,7 +224,7 @@ export default function ArticleWriterHub() {
                 </div>
               </div>
 
-              <Link href="/article-writer/complete" className="mt-6">
+              <Link href="/old-article-writer/complete" className="mt-6">
                 <Button variant="outline" className="w-full">
                   Start Complete Workflow
                 </Button>

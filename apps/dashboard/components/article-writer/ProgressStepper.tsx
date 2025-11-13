@@ -1,3 +1,4 @@
+import React from "react";
 import { cn } from "@/lib/utils";
 
 interface Step {
@@ -22,7 +23,7 @@ export function ProgressStepper({
   return (
     <div className={cn("w-full", className)}>
       {/* Desktop: Horizontal */}
-      <div className="hidden md:flex items-center justify-between">
+      <div className="hidden md:flex items-center justify-between relative">
         {steps.map((step, index) => {
           const isCompleted = index < currentStep;
           const isCurrent = index === currentStep;
@@ -30,18 +31,18 @@ export function ProgressStepper({
           const isClickable = onStepClick && (isCompleted || isCurrent);
 
           return (
-            <div key={step.id} className="flex items-center flex-1">
-              {/* Step Circle */}
-              <div className="flex flex-col items-center">
+            <React.Fragment key={step.id}>
+              {/* Step Circle and Label */}
+              <div className="flex flex-col items-center relative z-10">
                 <button
                   onClick={() => isClickable && onStepClick(index)}
                   disabled={!isClickable}
                   className={cn(
-                    "w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold transition-all duration-200",
+                    "w-12 h-12 rounded-full flex items-center justify-center text-sm font-semibold transition-all duration-200 mb-3",
                     isCompleted &&
                       "bg-[#10b981] text-white cursor-pointer hover:bg-[#059669]",
-                    isCurrent && "bg-[#171717] text-white ring-4 ring-[#e5e5e5]",
-                    isUpcoming && "bg-[#f5f5f5] text-[#a3a3a3]",
+                    isCurrent && "bg-[#171717] text-white",
+                    isUpcoming && "border-2 border-[#e5e5e5] text-[#a3a3a3] bg-white",
                     !isClickable && "cursor-not-allowed"
                   )}
                 >
@@ -63,18 +64,18 @@ export function ProgressStepper({
                     index + 1
                   )}
                 </button>
-                <div className="mt-2 text-center">
+                <div className="text-center">
                   <p
                     className={cn(
-                      "text-xs font-medium",
+                      "text-xs font-semibold uppercase tracking-wide mb-1",
                       isCurrent && "text-[#171717]",
-                      (isCompleted || isUpcoming) && "text-[#737373]"
+                      !isCurrent && "text-[#737373]"
                     )}
                   >
                     {step.label}
                   </p>
                   {step.description && (
-                    <p className="text-[10px] text-[#a3a3a3] mt-0.5">
+                    <p className="text-[11px] text-[#a3a3a3] leading-tight max-w-[100px]">
                       {step.description}
                     </p>
                   )}
@@ -83,7 +84,7 @@ export function ProgressStepper({
 
               {/* Connector Line */}
               {index < steps.length - 1 && (
-                <div className="flex-1 h-[2px] mx-4 bg-[#e5e5e5] relative">
+                <div className="flex-1 h-[2px] mx-4 bg-[#e5e5e5] relative -mt-[60px]">
                   <div
                     className={cn(
                       "absolute left-0 top-0 h-full bg-[#10b981] transition-all duration-300",
@@ -92,7 +93,7 @@ export function ProgressStepper({
                   />
                 </div>
               )}
-            </div>
+            </React.Fragment>
           );
         })}
       </div>

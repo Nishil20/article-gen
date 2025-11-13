@@ -19,9 +19,17 @@ export default function DashboardPage() {
   const router = useRouter();
 
   const handleToolClick = (toolId: string, toolTitle: string) => {
-    // Special handling for Article Generator - navigate to article writer
-    if (toolId === "article-generator") {
-      router.push("/article-writer");
+    // Navigate to the respective tool pages
+    if (toolId === "old-article-generator") {
+      router.push("/old-article-writer");
+    } else if (toolId === "blog-post-writer") {
+      router.push("/blog-post-writer");
+    } else if (toolId === "article-generator") {
+      router.push("/article-generator");
+    } else if (toolId === "content-rewriter") {
+      router.push("/content-rewriter");
+    } else if (toolId === "paragraph-generator") {
+      router.push("/paragraph-generator");
     } else {
       alert(`${toolTitle} coming soon!`);
     }

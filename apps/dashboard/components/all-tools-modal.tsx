@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useRouter } from "next/navigation";
 import {
   Dialog,
   DialogContent,
@@ -18,6 +19,7 @@ interface AllToolsModalProps {
 
 export function AllToolsModal({ children }: AllToolsModalProps) {
   const [open, setOpen] = React.useState(false);
+  const router = useRouter();
 
   // Group tools by category
   const toolsByCategory = mockTools.reduce((acc, tool) => {
@@ -27,6 +29,25 @@ export function AllToolsModal({ children }: AllToolsModalProps) {
     acc[tool.category].push(tool);
     return acc;
   }, {} as Record<string, typeof mockTools>);
+
+  const handleToolClick = (toolId: string, toolTitle: string) => {
+    // Close modal and navigate to the respective tool page
+    setOpen(false);
+
+    if (toolId === "old-article-generator") {
+      router.push("/old-article-writer");
+    } else if (toolId === "blog-post-writer") {
+      router.push("/blog-post-writer");
+    } else if (toolId === "article-generator") {
+      router.push("/article-generator");
+    } else if (toolId === "content-rewriter") {
+      router.push("/content-rewriter");
+    } else if (toolId === "paragraph-generator") {
+      router.push("/paragraph-generator");
+    } else {
+      alert(`${toolTitle} coming soon!`);
+    }
+  };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -51,6 +72,7 @@ export function AllToolsModal({ children }: AllToolsModalProps) {
                 {tools.map((tool) => (
                   <Card
                     key={tool.id}
+                    onClick={() => handleToolClick(tool.id, tool.title)}
                     className="p-4 hover:shadow-lg transition-all duration-200 cursor-pointer border-[#e5e5e5] hover:border-[#171717]"
                   >
                     <div className="flex items-start gap-3">

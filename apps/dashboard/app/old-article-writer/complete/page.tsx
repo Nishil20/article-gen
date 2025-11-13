@@ -73,7 +73,7 @@ export default function CompleteWorkflowPage() {
         <div className="max-w-[1400px] mx-auto px-6 md:px-12 py-6">
           <div className="flex items-center gap-3 mb-4">
             <Link
-              href="/article-writer"
+              href="/old-article-writer"
               className="text-[#737373] hover:text-[#171717] transition-colors"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -165,7 +165,7 @@ export default function CompleteWorkflowPage() {
               </div>
 
               <div className="flex gap-3">
-                <Link href="/article-writer">
+                <Link href="/old-article-writer">
                   <Button variant="ghost">Cancel</Button>
                 </Link>
                 <Button onClick={handleNext} disabled={selectedKeywords.length === 0} className="flex-1">

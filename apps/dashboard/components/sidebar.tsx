@@ -2,9 +2,9 @@
 
 import * as React from "react";
 import { usePathname } from "next/navigation";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,9 +13,31 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  LayoutDashboard,
+  Sparkles,
+  PenTool,
+  RefreshCw,
+  AlignLeft,
+  Wrench,
+  Folder,
+  ArrowUpCircle,
+} from "lucide-react";
 import { mockUser, mockNavigation } from "@/lib/mockData";
 import { cn } from "@/lib/utils";
 import { AllToolsModal } from "./all-tools-modal";
+
+// Icon mapping
+const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
+  LayoutDashboard,
+  Sparkles,
+  PenTool,
+  RefreshCw,
+  AlignLeft,
+  Wrench,
+  Folder,
+  ArrowUpCircle,
+};
 
 interface SidebarProps {
   className?: string;
@@ -25,14 +47,16 @@ export function Sidebar({ className }: SidebarProps) {
   const [isOpen, setIsOpen] = React.useState(false);
   const pathname = usePathname();
 
-  const progressPercentage = (mockUser.wordsLeft / mockUser.totalWords) * 100;
-
   const isActive = (href: string) => {
     if (href === "/") {
       return pathname === "/";
     }
     return pathname.startsWith(href);
   };
+
+  // Calculate progress percentage for plan usage
+  const progressPercentage =
+    ((mockUser.totalWords - mockUser.wordsLeft) / mockUser.totalWords) * 100;
 
   return (
     <>
@@ -83,7 +107,7 @@ export function Sidebar({ className }: SidebarProps) {
         )}
       >
         {/* Logo */}
-        <div className="p-6 border-b border-[#e5e5e5]">
+        <div className="p-6">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 bg-[#171717] rounded-lg flex items-center justify-center text-white font-bold">
               C
@@ -93,6 +117,48 @@ export function Sidebar({ className }: SidebarProps) {
             </span>
           </div>
         </div>
+          
+        {/* Navigation Links */}
+        <nav className="flex-1 px-3 py-2 space-y-0.5 overflow-y-auto">
+          {mockNavigation.map((item) => {
+            const active = isActive(item.href);
+            const IconComponent = iconMap[item.icon];
+
+            if (item.name === "All Tools") {
+              return (
+                <AllToolsModal key={item.name}>
+                  <div
+                    className={cn(
+                      "flex items-center gap-3 px-3 py-2.5 rounded-lg text-[15px] font-normal transition-all duration-200 cursor-pointer",
+                      active
+                        ? "bg-[#f5f5f5] text-[#171717]"
+                        : "text-[#171717] hover:bg-[#fafafa]"
+                    )}
+                  >
+                    {IconComponent && <IconComponent className="w-5 h-5" />}
+                    <span>{item.name}</span>
+                  </div>
+                </AllToolsModal>
+              );
+            }
+
+            return (
+              <a
+                key={item.name}
+                href={item.href}
+                className={cn(
+                  "flex items-center gap-3 px-3 py-2.5 rounded-lg text-[15px] font-normal transition-all duration-200",
+                  active
+                    ? "bg-[#f5f5f5] text-[#171717]"
+                    : "text-[#171717] hover:bg-[#fafafa]"
+                )}
+              >
+                {IconComponent && <IconComponent className="w-5 h-5" />}
+                <span>{item.name}</span>
+              </a>
+            );
+          })}
+        </nav>
 
         {/* Plan Info */}
         <div className="p-6 border-b border-[#e5e5e5]">
@@ -126,54 +192,13 @@ export function Sidebar({ className }: SidebarProps) {
           </Card>
         </div>
 
-        {/* Navigation Links */}
-        <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-          {mockNavigation.map((item) => {
-            const active = isActive(item.href);
-
-            if (item.name === "All Tools") {
-              return (
-                <AllToolsModal key={item.name}>
-                  <div
-                    className={cn(
-                      "flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 cursor-pointer",
-                      active
-                        ? "bg-[#171717] text-white"
-                        : "text-[#404040] hover:bg-[#f5f5f5]"
-                    )}
-                  >
-                    <span className="text-lg">{item.icon}</span>
-                    <span>{item.name}</span>
-                  </div>
-                </AllToolsModal>
-              );
-            }
-
-            return (
-              <a
-                key={item.name}
-                href={item.href}
-                className={cn(
-                  "flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200",
-                  active
-                    ? "bg-[#171717] text-white"
-                    : "text-[#404040] hover:bg-[#f5f5f5]"
-                )}
-              >
-                <span className="text-lg">{item.icon}</span>
-                <span>{item.name}</span>
-              </a>
-            );
-          })}
-        </nav>
-
         {/* Profile Section */}
-        <div className="p-4 border-t border-[#e5e5e5]">
+        <div className="p-3 border-t border-[#e5e5e5]">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-[#f5f5f5] transition-all duration-200 cursor-pointer">
-                <Avatar>
-                  <AvatarFallback className="bg-[#171717] text-white font-semibold">
+              <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-[#fafafa] transition-all duration-200 cursor-pointer">
+                <Avatar className="w-8 h-8">
+                  <AvatarFallback className="bg-[#171717] text-white font-semibold text-xs">
                     {mockUser.initials}
                   </AvatarFallback>
                 </Avatar>
@@ -186,7 +211,7 @@ export function Sidebar({ className }: SidebarProps) {
                   </p>
                 </div>
                 <svg
-                  className="w-4 h-4 text-[#737373] flex-shrink-0"
+                  className="w-4 h-4 text-[#a3a3a3] flex-shrink-0"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -213,20 +238,16 @@ export function Sidebar({ className }: SidebarProps) {
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem className="cursor-pointer">
-                <span className="mr-2">👤</span>
                 Profile
               </DropdownMenuItem>
               <DropdownMenuItem className="cursor-pointer">
-                <span className="mr-2">⚙️</span>
                 Settings
               </DropdownMenuItem>
               <DropdownMenuItem className="cursor-pointer">
-                <span className="mr-2">💳</span>
                 Billing
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem className="cursor-pointer text-red-600 focus:text-red-600">
-                <span className="mr-2">🚪</span>
                 Logout
               </DropdownMenuItem>
             </DropdownMenuContent>
