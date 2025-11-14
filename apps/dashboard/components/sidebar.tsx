@@ -26,6 +26,7 @@ import {
 import { mockUser, mockNavigation } from "@/lib/mockData";
 import { cn } from "@/lib/utils";
 import { AllToolsModal } from "./all-tools-modal";
+import { useAuth } from "@/contexts/AuthContext";
 
 // Icon mapping
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -46,6 +47,7 @@ interface SidebarProps {
 export function Sidebar({ className }: SidebarProps) {
   const [isOpen, setIsOpen] = React.useState(false);
   const pathname = usePathname();
+  const { user, signOut } = useAuth();
 
   const isActive = (href: string) => {
     if (href === "/") {
@@ -54,7 +56,17 @@ export function Sidebar({ className }: SidebarProps) {
     return pathname.startsWith(href);
   };
 
-  // Calculate progress percentage for plan usage
+  // Get user display data
+  const userName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User';
+  const userEmail = user?.email || '';
+  const userInitials = userName
+    .split(' ')
+    .map((n: string) => n[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2);
+
+  // Calculate progress percentage for plan usage (keeping mock data for now)
   const progressPercentage =
     ((mockUser.totalWords - mockUser.wordsLeft) / mockUser.totalWords) * 100;
 
@@ -199,15 +211,15 @@ export function Sidebar({ className }: SidebarProps) {
               <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-[#fafafa] transition-all duration-200 cursor-pointer">
                 <Avatar className="w-8 h-8">
                   <AvatarFallback className="bg-[#171717] text-white font-semibold text-xs">
-                    {mockUser.initials}
+                    {userInitials}
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-[#171717] truncate">
-                    {mockUser.name}
+                    {userName}
                   </p>
                   <p className="text-xs text-[#737373] truncate">
-                    {mockUser.email}
+                    {userEmail}
                   </p>
                 </div>
                 <svg
@@ -229,16 +241,16 @@ export function Sidebar({ className }: SidebarProps) {
               <DropdownMenuLabel className="font-normal">
                 <div className="flex flex-col space-y-1">
                   <p className="text-sm font-medium text-[#171717]">
-                    {mockUser.name}
+                    {userName}
                   </p>
                   <p className="text-xs text-[#737373]">
-                    {mockUser.email}
+                    {userEmail}
                   </p>
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="cursor-pointer">
-                Profile
+              <DropdownMenuItem className="cursor-pointer" asChild>
+                <a href="/profile">Profile</a>
               </DropdownMenuItem>
               <DropdownMenuItem className="cursor-pointer">
                 Settings
@@ -247,7 +259,10 @@ export function Sidebar({ className }: SidebarProps) {
                 Billing
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="cursor-pointer text-red-600 focus:text-red-600">
+              <DropdownMenuItem
+                className="cursor-pointer text-red-600 focus:text-red-600"
+                onClick={signOut}
+              >
                 Logout
               </DropdownMenuItem>
             </DropdownMenuContent>

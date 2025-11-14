@@ -8,8 +8,8 @@ import { ContentCard } from "@/components/content-card";
 import { PromotionalBanner } from "@/components/promotional-banner";
 import { FloatingChatButton } from "@/components/floating-chat-button";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/AuthContext";
 import {
-  mockUser,
   mockMetrics,
   mockTools,
   mockRecentContent,
@@ -17,6 +17,9 @@ import {
 
 export default function DashboardPage() {
   const router = useRouter();
+  const { user } = useAuth();
+
+  const userName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User';
 
   const handleToolClick = (toolId: string, toolTitle: string) => {
     // Navigate to the respective tool pages
@@ -50,7 +53,7 @@ export default function DashboardPage() {
           {/* Header with Greeting */}
           <div className="mb-12">
             <h1 className="text-[32px] md:text-[40px] font-bold text-[#171717] leading-[1.1] tracking-[-0.02em] mb-2 font-satoshi">
-              Hey {mockUser.name} — Let&apos;s boost your website traffic today!
+              Hey {userName} — Let&apos;s boost your website traffic today!
             </h1>
           </div>
 
