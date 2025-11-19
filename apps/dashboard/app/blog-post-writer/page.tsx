@@ -15,7 +15,9 @@ import {
 } from "@/components/ui/select";
 import { ProgressStepper } from "@/components/article-writer/ProgressStepper";
 import { GeneratingLoader } from "@/components/article-writer/GeneratingLoader";
-import { ArticleEditor } from "@/components/article-writer/ArticleEditor";
+import { EnhancedEditor } from "@/components/article-writer/EnhancedEditor";
+import { useToast } from "@/hooks/use-toast";
+import { markdownToHtml } from "@/lib/utils/markdown-converter";
 
 type Step = {
   id: string;
@@ -33,9 +35,11 @@ const steps: Step[] = [
 
 export default function BlogPostWriterPage() {
   const router = useRouter();
+  const { toast } = useToast();
   const [currentStep, setCurrentStep] = useState(1);
   const [isGenerating, setIsGenerating] = useState(false);
   const [showOutput, setShowOutput] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Step 1 - Details
   const [language, setLanguage] = useState("en-us");
@@ -53,74 +57,191 @@ export default function BlogPostWriterPage() {
   // Step 4 - Outline
   const [outline, setOutline] = useState<string[]>([]);
 
-  // Mock generated content
-  const mockBlogPost = `# ${selectedTitle || "How to Master Content Marketing in 2024"}
+  // Step 5 - Generated Content
+  const [generatedContent, setGeneratedContent] = useState("");
+  const [editorContent, setEditorContent] = useState("");
+  const [showRegenerateConfirm, setShowRegenerateConfirm] = useState(false);
 
-${intro || "Content marketing has evolved dramatically over the past few years. In this comprehensive guide, we'll explore the latest strategies and techniques to help you succeed in today's digital landscape."}
+  // API call functions
+  const generateTitles = async () => {
+    try {
+      setError(null);
+      setIsGenerating(true);
 
-## ${outline[0] || "Understanding Your Audience"}
+      const response = await fetch('/api/generate-titles', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          description,
+          language,
+          creativity,
+          targetedKeyword,
+        }),
+      });
 
-Understanding your target audience is the foundation of effective content marketing. By creating detailed buyer personas and analyzing user behavior, you can tailor your content to meet their specific needs and preferences.
+      const data = await response.json();
 
-## ${outline[1] || "Creating Compelling Content"}
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to generate titles');
+      }
 
-Quality content is what sets successful marketers apart. Focus on providing real value to your readers through well-researched, engaging, and actionable content that addresses their pain points.
+      setTitleOptions(data.titles);
+      setCurrentStep(2);
+      toast({
+        title: "Titles generated!",
+        description: "Select a title or write your own.",
+      });
+    } catch (err: any) {
+      setError(err.message);
+      toast({
+        title: "Error",
+        description: err.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsGenerating(false);
+    }
+  };
 
-## ${outline[2] || "Distribution and Promotion"}
+  const generateIntro = async () => {
+    try {
+      setError(null);
+      setIsGenerating(true);
 
-Creating great content is only half the battle. You need a solid distribution strategy to ensure your content reaches the right people at the right time. Leverage social media, email marketing, and SEO to maximize your reach.
+      const response = await fetch('/api/generate-intro', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: selectedTitle,
+          description,
+          targetedKeyword,
+          language,
+          creativity,
+        }),
+      });
 
-## ${outline[3] || "Measuring Success"}
+      const data = await response.json();
 
-Track key metrics like engagement rates, conversion rates, and ROI to understand what's working and what needs improvement. Use data-driven insights to continuously refine your content strategy.
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to generate introduction');
+      }
 
-## Conclusion
+      setIntro(data.intro);
+      setCurrentStep(3);
+      toast({
+        title: "Introduction generated!",
+        description: "Review and edit as needed.",
+      });
+    } catch (err: any) {
+      setError(err.message);
+      toast({
+        title: "Error",
+        description: err.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsGenerating(false);
+    }
+  };
 
-Content marketing success requires a strategic approach, consistent effort, and a willingness to adapt. By following these guidelines and staying current with industry trends, you'll be well-positioned to achieve your marketing goals.`;
+  const generateOutline = async () => {
+    try {
+      setError(null);
+      setIsGenerating(true);
+
+      const response = await fetch('/api/generate-outline', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: selectedTitle,
+          intro,
+          targetedKeyword,
+          language,
+          creativity,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to generate outline');
+      }
+
+      setOutline(data.sections);
+      setCurrentStep(4);
+      toast({
+        title: "Outline generated!",
+        description: "Review and edit the section titles.",
+      });
+    } catch (err: any) {
+      setError(err.message);
+      toast({
+        title: "Error",
+        description: err.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const generateBlogContent = async () => {
+    try {
+      setError(null);
+      setIsGenerating(true);
+
+      const response = await fetch('/api/generate-blog-content', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: selectedTitle,
+          intro,
+          sections: outline,
+          targetedKeyword,
+          language,
+          creativity,
+          targetLength: 'short', // 800-1200 words
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to generate blog content');
+      }
+
+      setGeneratedContent(data.content);
+      // Convert markdown to HTML for the editor
+      setEditorContent(markdownToHtml(data.content));
+      setCurrentStep(5);
+      setShowOutput(true);
+      toast({
+        title: "Blog post generated!",
+        description: `Generated ${data.wordCount} words.`,
+      });
+    } catch (err: any) {
+      setError(err.message);
+      toast({
+        title: "Error",
+        description: err.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsGenerating(false);
+    }
+  };
 
   const handleNext = () => {
     if (currentStep === 1) {
       if (description.length < 40) return;
-      setIsGenerating(true);
-      setTimeout(() => {
-        setTitleOptions([
-          `How to ${description.slice(0, 50)}... in 2024`,
-          `The Ultimate Guide to ${description.slice(0, 40)}`,
-          `10 Proven Ways to ${description.slice(0, 45)}`,
-          `${description.slice(0, 60)}: A Complete Guide`,
-        ]);
-        setIsGenerating(false);
-        setCurrentStep(2);
-      }, 2000);
+      generateTitles();
     } else if (currentStep === 2) {
       if (!selectedTitle) return;
-      setIsGenerating(true);
-      setTimeout(() => {
-        setIntro(
-          `In today's digital landscape, understanding ${targetedKeyword || "the topic"} is more important than ever. This comprehensive guide will walk you through everything you need to know to succeed.`
-        );
-        setIsGenerating(false);
-        setCurrentStep(3);
-      }, 2000);
+      generateIntro();
     } else if (currentStep === 3) {
-      setIsGenerating(true);
-      setTimeout(() => {
-        setOutline([
-          "Understanding the Fundamentals",
-          "Best Practices and Strategies",
-          "Common Mistakes to Avoid",
-          "Advanced Techniques",
-        ]);
-        setIsGenerating(false);
-        setCurrentStep(4);
-      }, 2000);
+      generateOutline();
     } else if (currentStep === 4) {
-      setIsGenerating(true);
-      setTimeout(() => {
-        setIsGenerating(false);
-        setCurrentStep(5);
-        setShowOutput(true);
-      }, 3000);
+      generateBlogContent();
     }
   };
 
@@ -131,6 +252,38 @@ Content marketing success requires a strategic approach, consistent effort, and 
     }
   };
 
+  // Regenerate functions
+  const handleRegenerateTitles = () => {
+    generateTitles();
+  };
+
+  const handleRegenerateIntro = () => {
+    generateIntro();
+  };
+
+  const handleRegenerateOutline = () => {
+    generateOutline();
+  };
+
+  const handleRegenerateContent = () => {
+    // Check if content has been edited
+    const htmlContent = editorContent.replace(/\s/g, '');
+    const originalHtml = markdownToHtml(generatedContent).replace(/\s/g, '');
+
+    if (htmlContent !== originalHtml) {
+      // Content has been edited, show confirmation
+      setShowRegenerateConfirm(true);
+    } else {
+      // No edits, regenerate directly
+      generateBlogContent();
+    }
+  };
+
+  const confirmRegenerate = () => {
+    setShowRegenerateConfirm(false);
+    generateBlogContent();
+  };
+
   const handleReset = () => {
     setCurrentStep(1);
     setDescription("");
@@ -139,8 +292,12 @@ Content marketing success requires a strategic approach, consistent effort, and 
     setTitleOptions([]);
     setIntro("");
     setOutline([]);
+    setGeneratedContent("");
+    setEditorContent("");
     setShowOutput(false);
+    setError(null);
   };
+
 
   const isNextDisabled = () => {
     if (currentStep === 1) return description.length < 40;
@@ -154,14 +311,60 @@ Content marketing success requires a strategic approach, consistent effort, and 
         <Sidebar />
         <div className="md:ml-64">
           <div className="max-w-[1200px] mx-auto px-6 md:px-12 py-8 md:py-12">
-            <ArticleEditor
-              content={mockBlogPost}
-              onBack={handleReset}
-              onSave={() => {
-                alert("Blog post saved to your content library!");
-                router.push("/content");
+            <div className="mb-6 flex items-center justify-between">
+              <div>
+                <h1 className="text-2xl font-bold text-[#171717]">Edit Your Blog Post</h1>
+                <p className="text-sm text-[#737373]">Use the editor below to refine your content</p>
+              </div>
+              <Button
+                onClick={handleRegenerateContent}
+                disabled={isGenerating}
+                variant="outline"
+                className="border-[#171717] text-[#171717] hover:bg-[#171717] hover:text-white"
+              >
+                {isGenerating ? "Regenerating..." : "Regenerate Content"}
+              </Button>
+            </div>
+
+            <EnhancedEditor
+              content={editorContent}
+              onChange={setEditorContent}
+              title={selectedTitle}
+              metadata={{
+                keywords: targetedKeyword,
+                language,
               }}
+              onBack={handleReset}
+              placeholder="Your blog post content appears here. Edit as needed..."
             />
+
+            {/* Regenerate Confirmation Dialog */}
+            {showRegenerateConfirm && (
+              <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+                <div className="bg-white rounded-xl p-6 max-w-md w-full mx-4 shadow-xl">
+                  <h3 className="text-lg font-bold text-[#171717] mb-2">
+                    Regenerate Content?
+                  </h3>
+                  <p className="text-sm text-[#737373] mb-6">
+                    You have made edits to this blog post. Regenerating will replace all your changes with new AI-generated content. This action cannot be undone.
+                  </p>
+                  <div className="flex gap-3 justify-end">
+                    <Button
+                      variant="ghost"
+                      onClick={() => setShowRegenerateConfirm(false)}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      onClick={confirmRegenerate}
+                      className="bg-red-600 hover:bg-red-700"
+                    >
+                      Yes, Regenerate
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -339,13 +542,24 @@ Content marketing success requires a strategic approach, consistent effort, and 
                 {/* Step 2 - Title */}
                 {currentStep === 2 && (
                   <div className="space-y-8">
-                    <div>
-                      <h2 className="text-2xl font-bold text-[#171717] font-satoshi tracking-[-0.02em] leading-[1.2] mb-2">
-                        Step 2: Title
-                      </h2>
-                      <p className="text-base text-[#737373]">
-                        Choose a title for your blog post.
-                      </p>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h2 className="text-2xl font-bold text-[#171717] font-satoshi tracking-[-0.02em] leading-[1.2] mb-2">
+                          Step 2: Title
+                        </h2>
+                        <p className="text-base text-[#737373]">
+                          Choose a title for your blog post.
+                        </p>
+                      </div>
+                      <Button
+                        onClick={handleRegenerateTitles}
+                        disabled={isGenerating}
+                        variant="outline"
+                        size="sm"
+                        className="text-[#171717] border-[#e5e5e5] hover:border-[#171717]"
+                      >
+                        {isGenerating ? "..." : "Regenerate"}
+                      </Button>
                     </div>
 
                     <div className="space-y-3">
@@ -383,13 +597,24 @@ Content marketing success requires a strategic approach, consistent effort, and 
                 {/* Step 3 - Intro */}
                 {currentStep === 3 && (
                   <div className="space-y-8">
-                    <div>
-                      <h2 className="text-2xl font-bold text-[#171717] font-satoshi tracking-[-0.02em] leading-[1.2] mb-2">
-                        Step 3: Intro
-                      </h2>
-                      <p className="text-base text-[#737373]">
-                        Review and edit your introduction.
-                      </p>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h2 className="text-2xl font-bold text-[#171717] font-satoshi tracking-[-0.02em] leading-[1.2] mb-2">
+                          Step 3: Intro
+                        </h2>
+                        <p className="text-base text-[#737373]">
+                          Review and edit your introduction.
+                        </p>
+                      </div>
+                      <Button
+                        onClick={handleRegenerateIntro}
+                        disabled={isGenerating}
+                        variant="outline"
+                        size="sm"
+                        className="text-[#171717] border-[#e5e5e5] hover:border-[#171717]"
+                      >
+                        {isGenerating ? "..." : "Regenerate"}
+                      </Button>
                     </div>
 
                     <div className="space-y-2">
@@ -409,13 +634,24 @@ Content marketing success requires a strategic approach, consistent effort, and 
                 {/* Step 4 - Outline */}
                 {currentStep === 4 && (
                   <div className="space-y-8">
-                    <div>
-                      <h2 className="text-2xl font-bold text-[#171717] font-satoshi tracking-[-0.02em] leading-[1.2] mb-2">
-                        Step 4: Outline
-                      </h2>
-                      <p className="text-base text-[#737373]">
-                        Review and edit your blog outline.
-                      </p>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h2 className="text-2xl font-bold text-[#171717] font-satoshi tracking-[-0.02em] leading-[1.2] mb-2">
+                          Step 4: Outline
+                        </h2>
+                        <p className="text-base text-[#737373]">
+                          Review and edit your blog outline.
+                        </p>
+                      </div>
+                      <Button
+                        onClick={handleRegenerateOutline}
+                        disabled={isGenerating}
+                        variant="outline"
+                        size="sm"
+                        className="text-[#171717] border-[#e5e5e5] hover:border-[#171717]"
+                      >
+                        {isGenerating ? "..." : "Regenerate"}
+                      </Button>
                     </div>
 
                     <div className="space-y-4">
