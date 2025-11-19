@@ -23,20 +23,45 @@ export default function ContentRewriterPage() {
   const [targetAudience, setTargetAudience] = React.useState("general");
   const [isGenerating, setIsGenerating] = React.useState(false);
   const [rewrittenContent, setRewrittenContent] = React.useState("");
+  const [error, setError] = React.useState("");
 
-  const handleRewrite = () => {
+  const handleRewrite = async () => {
     if (!content.trim()) return;
 
     setIsGenerating(true);
+    setError("");
 
-    // Simulate AI rewriting with timeout
-    setTimeout(() => {
-      // Mock rewritten content
-      const mockRewrittenContent = `# Rewritten Content\n\n${content}\n\n---\n\n**Rewrite Settings:**\n- Tone: ${tone}\n- Length: ${length}\n- Target Audience: ${targetAudience}\n\nThis is a mock rewritten version of your content. In a real implementation, this would be processed by an AI model to rewrite the content according to your specifications.\n\nThe rewritten content would maintain the core message while adapting the style, tone, and complexity to match your selected preferences.`;
+    try {
+      // Call the API route
+      const response = await fetch('/api/rewrite-content', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          content,
+          tone,
+          length,
+          targetAudience,
+        }),
+      });
 
-      setRewrittenContent(mockRewrittenContent);
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to rewrite content');
+      }
+
+      // Format the content with metadata
+      const formattedContent = `# Rewritten Content\n\n${data.content}\n\n---\n\n**Rewrite Settings:**\n- Tone: ${tone}\n- Length: ${length}\n- Target Audience: ${targetAudience}\n- Original Length: ${data.metadata?.parameters?.originalLength || 0} characters\n- Rewritten Length: ${data.metadata?.parameters?.rewrittenLength || 0} characters\n\n**AI Model:**\n- Model: ${data.metadata?.model || 'GPT-3.5 Turbo'}\n- Temperature: ${data.metadata?.temperature || 0.7}`;
+
+      setRewrittenContent(formattedContent);
       setIsGenerating(false);
-    }, 8000);
+    } catch (err: any) {
+      console.error('Error rewriting content:', err);
+      setError(err.message || 'Failed to rewrite content. Please try again.');
+      setIsGenerating(false);
+    }
   };
 
   const handleSave = () => {
@@ -49,6 +74,7 @@ export default function ContentRewriterPage() {
     setLength("same");
     setTargetAudience("general");
     setRewrittenContent("");
+    setError("");
   };
 
   return (
@@ -80,6 +106,31 @@ export default function ContentRewriterPage() {
 
         {/* Main Content Area */}
         <div className="px-6 md:px-12 py-8 max-w-[1400px] mx-auto">
+          {/* Error Message */}
+          {error && (
+            <Card className="mb-6 border-destructive bg-destructive/10">
+              <CardContent className="pt-6">
+                <div className="flex items-start gap-3">
+                  <div className="flex-shrink-0 w-5 h-5 rounded-full bg-destructive/20 flex items-center justify-center">
+                    <span className="text-destructive text-sm font-bold">!</span>
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-destructive mb-1">Error</h3>
+                    <p className="text-sm text-destructive/90">{error}</p>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setError("")}
+                    className="text-destructive hover:text-destructive"
+                  >
+                    Dismiss
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           {!isGenerating && !rewrittenContent ? (
             <div className="grid lg:grid-cols-3 gap-6">
               {/* Left Column - Input */}

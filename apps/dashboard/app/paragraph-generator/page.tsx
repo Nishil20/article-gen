@@ -28,29 +28,47 @@ export default function ParagraphGeneratorPage() {
   const [paragraphCount, setParagraphCount] = React.useState("3");
   const [isGenerating, setIsGenerating] = React.useState(false);
   const [generatedContent, setGeneratedContent] = React.useState("");
+  const [error, setError] = React.useState("");
 
-  const handleGenerate = () => {
+  const handleGenerate = async () => {
     if (!topic.trim()) return;
 
     setIsGenerating(true);
+    setError("");
 
-    // Simulate AI generation with timeout
-    setTimeout(() => {
-      // Mock generated paragraphs
-      const count = parseInt(paragraphCount);
-      const paragraphs = [];
+    try {
+      // Call the API route
+      const response = await fetch('/api/generate-paragraph', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          topic,
+          keywords,
+          tone,
+          length,
+          targetAudience,
+          paragraphCount: parseInt(paragraphCount),
+        }),
+      });
 
-      for (let i = 0; i < count; i++) {
-        paragraphs.push(
-          `This is paragraph ${i + 1} about "${topic}". In a real implementation, this would be AI-generated content tailored to your specifications. The paragraph would incorporate the keywords: ${keywords || "N/A"} and maintain a ${tone} tone suitable for ${targetAudience} audience. Each paragraph would be approximately ${length} in length, providing comprehensive coverage of the topic while maintaining readability and engagement.`
-        );
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to generate content');
       }
 
-      const mockContent = `# ${topic}\n\n${paragraphs.join("\n\n")}\n\n---\n\n**Generation Settings:**\n- Tone: ${tone}\n- Length: ${length}\n- Target Audience: ${targetAudience}\n- Number of Paragraphs: ${paragraphCount}\n- Keywords: ${keywords || "None"}`;
+      // Format the content with metadata
+      const formattedContent = `# ${topic}\n\n${data.content}\n\n---\n\n**Generation Settings:**\n- Tone: ${tone}\n- Length: ${length}\n- Target Audience: ${targetAudience}\n- Number of Paragraphs: ${paragraphCount}\n- Keywords: ${keywords || "None"}\n\n**AI Model:**\n- Model: ${data.metadata?.model || 'GPT-3.5 Turbo'}\n- Temperature: ${data.metadata?.temperature || 0.7}`;
 
-      setGeneratedContent(mockContent);
+      setGeneratedContent(formattedContent);
       setIsGenerating(false);
-    }, 8000);
+    } catch (err: any) {
+      console.error('Error generating content:', err);
+      setError(err.message || 'Failed to generate content. Please try again.');
+      setIsGenerating(false);
+    }
   };
 
   const handleSave = () => {
@@ -65,6 +83,7 @@ export default function ParagraphGeneratorPage() {
     setTargetAudience("general");
     setParagraphCount("3");
     setGeneratedContent("");
+    setError("");
   };
 
   return (
@@ -96,6 +115,31 @@ export default function ParagraphGeneratorPage() {
 
         {/* Main Content Area */}
         <div className="px-6 md:px-12 py-8 max-w-[1400px] mx-auto">
+          {/* Error Message */}
+          {error && (
+            <Card className="mb-6 border-destructive bg-destructive/10">
+              <CardContent className="pt-6">
+                <div className="flex items-start gap-3">
+                  <div className="flex-shrink-0 w-5 h-5 rounded-full bg-destructive/20 flex items-center justify-center">
+                    <span className="text-destructive text-sm font-bold">!</span>
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-destructive mb-1">Error</h3>
+                    <p className="text-sm text-destructive/90">{error}</p>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setError("")}
+                    className="text-destructive hover:text-destructive"
+                  >
+                    Dismiss
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           {!isGenerating && !generatedContent ? (
             <div className="grid lg:grid-cols-3 gap-6">
               {/* Left Column - Input */}
