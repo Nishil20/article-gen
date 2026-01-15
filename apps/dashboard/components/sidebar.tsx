@@ -252,8 +252,8 @@ export function Sidebar({ className }: SidebarProps) {
               <DropdownMenuItem className="cursor-pointer" asChild>
                 <a href="/profile">Profile</a>
               </DropdownMenuItem>
-              <DropdownMenuItem className="cursor-pointer">
-                Settings
+              <DropdownMenuItem className="cursor-pointer" asChild>
+                <a href="/settings">Settings</a>
               </DropdownMenuItem>
               <DropdownMenuItem className="cursor-pointer">
                 Billing

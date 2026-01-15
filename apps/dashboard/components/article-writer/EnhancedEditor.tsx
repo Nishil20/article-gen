@@ -40,6 +40,10 @@ import {
   Highlighter,
   Download,
   Copy,
+  Globe,
+  Loader2,
+  CheckCircle2,
+  XCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -79,6 +83,13 @@ export function EnhancedEditor({
   const [showImageDialog, setShowImageDialog] = useState(false);
   const [imageUrl, setImageUrl] = useState("");
   const [copied, setCopied] = useState(false);
+  const [showWordPressDialog, setShowWordPressDialog] = useState(false);
+  const [publishing, setPublishing] = useState(false);
+  const [publishResult, setPublishResult] = useState<{
+    success: boolean;
+    message: string;
+    url?: string;
+  } | null>(null);
 
   const editor = useEditor({
     immediatelyRender: false,
@@ -176,6 +187,47 @@ export function EnhancedEditor({
   const handleExportText = () => {
     if (editor) {
       exportAsText(editor.getHTML(), title);
+    }
+  };
+
+  const handlePublishToWordPress = async () => {
+    if (!editor) return;
+
+    setPublishing(true);
+    setPublishResult(null);
+
+    try {
+      const response = await fetch("/api/wordpress/publish", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title,
+          content: editor.getHTML(),
+          excerpt: "", // Could be extracted from first paragraph if needed
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setPublishResult({
+          success: true,
+          message: "Post published to WordPress as draft!",
+          url: data.post?.url,
+        });
+      } else {
+        setPublishResult({
+          success: false,
+          message: data.error || "Failed to publish to WordPress",
+        });
+      }
+    } catch (error) {
+      setPublishResult({
+        success: false,
+        message: "An error occurred while publishing to WordPress",
+      });
+    } finally {
+      setPublishing(false);
     }
   };
 
@@ -540,6 +592,24 @@ export function EnhancedEditor({
             <Download className="w-4 h-4 mr-2" />
             .txt
           </Button>
+          <Button
+            onClick={() => setShowWordPressDialog(true)}
+            disabled={publishing}
+            className="bg-[#171717] text-white hover:bg-[#404040]"
+            size="sm"
+          >
+            {publishing ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Publishing...
+              </>
+            ) : (
+              <>
+                <Globe className="w-4 h-4 mr-2" />
+                Publish to WordPress
+              </>
+            )}
+          </Button>
           {onSave && (
             <Button onClick={onSave}>
               Save
@@ -547,6 +617,98 @@ export function EnhancedEditor({
           )}
         </div>
       </div>
+
+      {/* WordPress Publish Dialog */}
+      {showWordPressDialog && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 max-w-md w-full mx-4 shadow-xl">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-2 bg-[#fafafa] rounded-lg border border-[#e5e5e5]">
+                <Globe className="w-6 h-6 text-[#404040]" />
+              </div>
+              <h3 className="text-lg font-bold text-[#171717]">
+                Publish to WordPress
+              </h3>
+            </div>
+
+            {!publishResult ? (
+              <>
+                <p className="text-sm text-[#737373] mb-6">
+                  This will publish your blog post to WordPress as a draft. You can review and publish it from your WordPress dashboard.
+                </p>
+                <div className="flex gap-3 justify-end">
+                  <Button
+                    variant="ghost"
+                    onClick={() => setShowWordPressDialog(false)}
+                    disabled={publishing}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={handlePublishToWordPress}
+                    disabled={publishing}
+                    className="bg-[#171717] hover:bg-[#404040]"
+                  >
+                    {publishing ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Publishing...
+                      </>
+                    ) : (
+                      "Publish as Draft"
+                    )}
+                  </Button>
+                </div>
+              </>
+            ) : (
+              <>
+                <div
+                  className={`flex items-start gap-3 p-4 rounded border mb-4 ${
+                    publishResult.success
+                      ? "bg-green-50 border-green-200"
+                      : "bg-red-50 border-red-200"
+                  }`}
+                >
+                  {publishResult.success ? (
+                    <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                  ) : (
+                    <XCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                  )}
+                  <div className="flex-1">
+                    <p
+                      className={`text-sm font-medium ${
+                        publishResult.success ? "text-green-900" : "text-red-900"
+                      }`}
+                    >
+                      {publishResult.message}
+                    </p>
+                    {publishResult.url && (
+                      <a
+                        href={publishResult.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm text-blue-600 hover:underline mt-1 inline-block"
+                      >
+                        View in WordPress →
+                      </a>
+                    )}
+                  </div>
+                </div>
+                <div className="flex gap-3 justify-end">
+                  <Button
+                    onClick={() => {
+                      setShowWordPressDialog(false);
+                      setPublishResult(null);
+                    }}
+                  >
+                    Close
+                  </Button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
 
       <style jsx global>{`
         .tiptap-editor .ProseMirror {
